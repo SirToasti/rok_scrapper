@@ -16,7 +16,7 @@ def trim_to_bbox(image):
     except TypeError as e:
         print(e)
         print(width, height)
-        image.show()
+        # image.show()
 
 
 def get_text(image, label=None, dark_on_light=False):
@@ -45,12 +45,10 @@ def get_number(image, label=None, dark_on_light=False):
     try:
         return locale.atoi(value)
     except ValueError as e:
-        image.show()
         if dark_on_light:
             cleaned_image = ImageOps.invert(trim_to_bbox(get_black_and_white(image).convert('RGB')))
         else:
             cleaned_image = trim_to_bbox(ImageOps.invert(get_black_and_white(image).convert('RGB')))
-        cleaned_image.show()
         print(e)
         print(data)
         return -1

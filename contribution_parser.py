@@ -1,5 +1,6 @@
 import config
 import common.ocr
+import traceback
 
 
 def parse_stats(kills_image, more_info_image, governor_id, name):
@@ -15,6 +16,7 @@ def parse_stats(kills_image, more_info_image, governor_id, name):
         print(result)
         return result
     except Exception as e:
+        print(traceback.format_exc())
         print('failed to parse profile: {}'.format(e))
         return None
 

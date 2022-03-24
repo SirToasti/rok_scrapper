@@ -3,6 +3,7 @@ import config
 import contribution_scraper
 import contribution_parser
 import csv
+import common.ocr
 import glob
 from PIL import Image
 import re
@@ -11,6 +12,7 @@ import csv
 from sqlalchemy.orm import Session
 import models
 import db
+from PIL import Image
 
 
 def upload_test():
@@ -19,10 +21,28 @@ def upload_test():
     storage = common.storage.FileStorage(prefix=r'{}\{}'.format(kingdom, date))
     storage.upload_to_s3()
 
+def debug():
+    im = Image.open('samples/2022-03-23_profile_error_424_1.png')
+    mail_crop = im.crop(config.coordinates['1920x1080']['mail'])
+    text, _ = common.ocr.get_text(mail_crop)
+    print(text)
+
+def debug_migrated():
+    im = Image.open('samples/migrated_kills.png')
+    id_crop = im.crop(config.coordinates['1920x1080']['governor_id'])
+    text, raw = common.ocr.get_text(id_crop)
+    print(text)
+    print(raw)
+    match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
+    if not match:
+        print('Failed to parse governor id: {}'.format(text))
+    print(match.group(1))
+    print(match.group(2))
 
 def main():
     # get_low_power_governors()
-    db_test()
+    # db_test()
+    debug_migrated()
     pass
 
 

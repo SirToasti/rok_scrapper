@@ -93,8 +93,9 @@ class StatsScraper:
         self.storage.save_image(more_info, '{}_more_info.png'.format(governor_id))
         self.emulator.tap_location(self.coordinates['close_more_info'])
         self.emulator.tap_location(self.coordinates['close_profile'])
-
-        if self.parse_inline:
+        if not governor_id.isnumeric():
+            print('unrecognized governor id that was hashed: {}'.format(governor_id))
+        if self.parse_inline and governor_id.isnumeric():
             data = contribution_parser.parse_stats(kills, more_info, governor_id, name)
             self.parsed_data.append(data)
         return governor_id
@@ -120,10 +121,12 @@ class StatsScraper:
     def extract_governor_id(self, image):
         id_crop = image.crop(self.coordinates['governor_id'])
         text, raw = common.ocr.get_text(id_crop)
-        match = re.search('.{3}: ?(\d+)\)', text)
+        match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
         if not match:
             print('Failed to parse governor id: {}'.format(text))
             return hashlib.sha1(text.encode('utf-8')).hexdigest()
+        if match.group(2):
+            print('Governor {} has migrated to KD{}'.format(match.group(1), match.group(2)))
         return match.group(1)
 
 def run_stats_scraper(kingdom, date, emulator, storage, limit):
