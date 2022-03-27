@@ -5,6 +5,7 @@ import common
 import contribution_scraper
 from sqlalchemy.orm import Session
 import models
+from datetime import datetime
 
 parser = argparse.ArgumentParser(description='Do a RoK data scan.')
 parser.add_argument('kingdom')
@@ -17,6 +18,7 @@ def run_scraper(kingdom, pull_label, emulator_id):
     engine = db.init_db(config.databases['rds'])
     emulator = common.emulator.Rok_Emulator(config.emulators[emulator_id])
     storage = common.storage.FileStorage(prefix=r'{}\{}'.format(kingdom, pull_label))
+    timestamp = datetime.now()
     emulator.initialize()
     emulator.start_rok()
     scraper = contribution_scraper.StatsScraper(emulator, storage, '1920x1080', limit, kingdom, pull_label, parse=True)
@@ -27,6 +29,7 @@ def run_scraper(kingdom, pull_label, emulator_id):
     emulator.stop()
 
     with Session(engine) as session:
+        session.add(models.Pulls(pull_id=pull_label, timestamp=timestamp))
         for stat in scraper.parsed_data:
             session.merge(models.Governor_Data(
                 pull_id=pull_label,
@@ -46,6 +49,8 @@ def run_scraper(kingdom, pull_label, emulator_id):
                 kill_parse_error=stat['check_kills']
             ))
         session.commit()
+    with engine.connect() as con:
+        con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
 
     storage.upload_to_s3()
 
