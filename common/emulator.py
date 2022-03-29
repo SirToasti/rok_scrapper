@@ -5,11 +5,13 @@ import re
 import time
 import urllib.parse
 import boto3
+import logging
 
 client = AdbClient(host='127.0.0.1', port=5037)
 ec2_client = boto3.client('ec2')
 ec2_resource = boto3.resource('ec2')
 
+logger = logging.getLogger(__name__)
 
 class Rok_Emulator:
     def __init__(self, config):
@@ -20,11 +22,11 @@ class Rok_Emulator:
     def initialize(self):
         if self.config['type'] == 'genymotion':
             instance = ec2_resource.Instance(self.config['name'])
-            print('starting instance')
+            logger.info('starting instance {}'.format(self.config['name']))
             instance.start()
             waiter = ec2_client.get_waiter('instance_status_ok')
             waiter.wait(InstanceIds=[self.config['name']])
-            print('instance ready')
+            logger.info('instance {} ready'.format(self.config['name']))
         subprocess.run(['adb.exe', 'connect', self.config['address']])
         self.device = client.device(self.config['address'])
 
@@ -57,7 +59,7 @@ class Rok_Emulator:
             resultMatch = resultMatcher.match(output)
             if resultMatch and len(resultMatch.groups()) > 0:
                 if len(resultMatch.group(1)) == 0:
-                    print("error: " + resultMatch.group(1))
+                    logger.error('error getting clipboard. len is 0: {}'.format(resultMatch.group(1)))
                 status = int(resultMatch.group(1))
                 if status == -1:
                     # re.DOTALL to match newline as well
@@ -78,11 +80,10 @@ class Rok_Emulator:
             resultMatch = resultMatcher.match(output)
             if resultMatch and len(resultMatch.groups()) > 0:
                 if len(resultMatch.group(1)) == 0:
-                    print("error: " + resultMatch.group(1))
+                    logger.error('error pasting text. len is 0: {}'.format(resultMatch.group(1)))
                 status = int(resultMatch.group(1))
                 if status != -1:
-                    print("error pasting text")
-                    print(output)
+                    logger.error('error pasting text. output: {}'.format(output))
         self.device.shell(r"am broadcast -n ch.pete.adbclipboard/.WriteReceiver -e text {}".format(urllib.parse.quote(text)), handler=handler)
 
     def paste(self):
@@ -92,3 +93,4 @@ class Rok_Emulator:
         if self.config['type'] == 'genymotion':
             instance = ec2_resource.Instance(self.config['name'])
             instance.stop()
+            logger.info('stopping instance {}'.format(self.config['name']))

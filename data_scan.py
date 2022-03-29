@@ -6,12 +6,15 @@ import contribution_scraper
 from sqlalchemy.orm import Session
 import models
 from datetime import datetime
+import logging
+import logging.handlers
 
 parser = argparse.ArgumentParser(description='Do a RoK data scan.')
 parser.add_argument('kingdom')
 parser.add_argument('pull_label')
 parser.add_argument('emulator_id')
 
+logger = logging.getLogger(__name__)
 
 def run_scraper(kingdom, pull_label, emulator_id):
     limit = 990
@@ -57,7 +60,22 @@ def run_scraper(kingdom, pull_label, emulator_id):
 
 def main():
     args = parser.parse_args()
-    run_scraper(args.kingdom, args.pull_label, args.emulator_id)
+    root_logger = logging.getLogger()
+    console_handler = logging.StreamHandler()
+    handler = logging.handlers.WatchedFileHandler('logs/{}.log'.format(args.pull_label), encoding='utf-8')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    handler.setFormatter(formatter)
+    root_logger.setLevel('INFO')
+    root_logger.addHandler(handler)
+    root_logger.addHandler(console_handler)
+
+    try:
+        run_scraper(args.kingdom, args.pull_label, args.emulator_id)
+    except Exception as e:
+        logger.exception(e)
+        emulator = common.emulator.Rok_Emulator(config.emulators[args.emulator_id])
+        emulator.stop()
 
 
 if __name__ == '__main__':

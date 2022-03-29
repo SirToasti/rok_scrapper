@@ -7,6 +7,10 @@ import hashlib
 import time
 import contribution_parser
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class StatsScraper:
     def __init__(self, emulator, storage, resolution, limit, kingdom, date, parse=False):
         self.coordinates = config.coordinates[resolution]
@@ -33,19 +37,19 @@ class StatsScraper:
             if self.is_on_profile(i):
                 self.process_profile()
                 continue
-            print('profile {} failed to load'.format(i))
+            logger.warning('profile {} failed to load'.format(i))
             self.emulator.tap_location(self.coordinates['row_5'])
             i += 1
             if self.is_on_profile(i):
                 self.process_profile()
                 continue
-            print('profile {} failed to load'.format(i))
+            logger.warning('profile {} failed to load'.format(i))
             self.emulator.tap_location(self.coordinates['row_6'])
             i += 1
             if self.is_on_profile(i):
                 self.process_profile()
             else:
-                print('profile {} failed to load'.format(i))
+                logger.warning('profile {} failed to load'.format(i))
                 raise Exception('Too many unparsable profiles')
 
     def setup_leaderboard_scraper(self):
@@ -73,11 +77,11 @@ class StatsScraper:
         time.sleep(2)
         self.emulator.tap_location(self.coordinates['view_profile'])
         if not self.is_on_profile(governor_id):
-            print('unable to find {}'.format(governor_name))
+            logger.warning('unable to find {}'.format(governor_name))
         else:
             found_id = self.process_profile()
             if str(governor_id) != found_id:
-                print('did not find the correct profile for id:{} name:{}'.format(governor_id, governor_name))
+                logger.warning('did not find the correct profile for id:{} name:{}'.format(governor_id, governor_name))
         self.emulator.tap_location(self.coordinates['close_big_window'])
 
     def process_profile(self):
@@ -94,7 +98,7 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['close_more_info'])
         self.emulator.tap_location(self.coordinates['close_profile'])
         if not governor_id.isnumeric():
-            print('unrecognized governor id that was hashed: {}'.format(governor_id))
+            logger.error('unrecognized governor id that was hashed: {}'.format(governor_id))
         if self.parse_inline and governor_id.isnumeric():
             data = contribution_parser.parse_stats(kills, more_info, governor_id, name)
             self.parsed_data.append(data)
@@ -123,10 +127,10 @@ class StatsScraper:
         text, raw = common.ocr.get_text(id_crop)
         match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
         if not match:
-            print('Failed to parse governor id: {}'.format(text))
+            logger.warning('Failed to parse governor id: {}'.format(text))
             return hashlib.sha1(text.encode('utf-8')).hexdigest()
         if match.group(2):
-            print('Governor {} has migrated to KD{}'.format(match.group(1), match.group(2)))
+            logger.warning('Governor {} has migrated to KD{}'.format(match.group(1), match.group(2)))
         return match.group(1)
 
 def run_stats_scraper(kingdom, date, emulator, storage, limit):

@@ -1,6 +1,9 @@
 from PIL import ImageOps
 import pytesseract
 import locale
+import logging
+
+logger = logging.getLogger(__name__)
 
 locale.setlocale(locale.LC_NUMERIC, locale.getlocale())
 
@@ -14,8 +17,8 @@ def trim_to_bbox(image):
         left, top, right, bottom = ImageOps.invert(image).getbbox()
         return image.crop((max(left - 5, 0), max(top - 5, 0), min(right + 5, width), min(bottom + 5, height)))
     except TypeError as e:
-        print(e)
-        print(width, height)
+        logger.exception(e)
+        logger.debug('image.size: {}}, {}}'.format(width, height))
         # image.show()
 
 
@@ -49,6 +52,6 @@ def get_number(image, label=None, dark_on_light=False):
             cleaned_image = ImageOps.invert(trim_to_bbox(get_black_and_white(image).convert('RGB')))
         else:
             cleaned_image = trim_to_bbox(ImageOps.invert(get_black_and_white(image).convert('RGB')))
-        print(e)
-        print(data)
+        logger.exception(e)
+        logger.warning('failed to parse as a number: {}'.format(data))
         return -1

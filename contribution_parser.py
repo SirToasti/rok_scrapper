@@ -1,7 +1,8 @@
 import config
 import common.ocr
-import traceback
+import logging
 
+logger = logging.getLogger(__name__)
 
 def parse_stats(kills_image, more_info_image, governor_id, name):
     try:
@@ -13,11 +14,11 @@ def parse_stats(kills_image, more_info_image, governor_id, name):
         }
         result.update(kills)
         result.update(more_info)
-        print(result)
+        logger.info(result)
         return result
     except Exception as e:
-        print(traceback.format_exc())
-        print('failed to parse profile: {}'.format(e))
+        logger.error('failed to parse profile: {}'.format(e))
+        logger.exception(e)
         return None
 
 
