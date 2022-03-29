@@ -18,7 +18,7 @@ def trim_to_bbox(image):
         return image.crop((max(left - 5, 0), max(top - 5, 0), min(right + 5, width), min(bottom + 5, height)))
     except TypeError as e:
         logger.exception(e)
-        logger.debug('image.size: {}}, {}}'.format(width, height))
+        logger.debug('image.size: {}, {}'.format(width, height))
         # image.show()
 
 
