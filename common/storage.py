@@ -3,6 +3,7 @@ import glob
 import boto3
 import multiprocessing
 import mimetypes
+import os
 
 BUCKET_NAME = 'rok-2402-screenshots'
 s3_client = boto3.resource('s3')
@@ -13,6 +14,7 @@ def upload_file(prefix, filename):
     guessed_type = mimetypes.guess_type(filename)[0] or 'binary/octet-stream'
     with open(filename, 'rb') as f:
         bucket.put_object(Body=f, ContentType=guessed_type, Key=key)
+    os.remove(filename)
 
 class FileStorage:
     def __init__(self, prefix=''):

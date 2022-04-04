@@ -27,3 +27,12 @@ class Governor_Data(Base):
     rss_assistance = Column(BigInteger)
     helps = Column(BigInteger)
     kill_parse_error = Column(Boolean)
+
+
+class Governors(Base):
+    __tablename__ = "governors"
+
+    governor_id = Column(Integer, primary_key=True)
+    last_known_name = Column(String)
+    last_seen = Column(String)
+    ignore = Column(Boolean)

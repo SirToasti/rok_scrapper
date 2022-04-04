@@ -23,6 +23,11 @@ emulators = {
         'type': 'genymotion',
         'name': 'i-0fe13b13f22bd209e',
         'address': '172.31.56.199:5555',
+    },
+    'genymotion-2402-lk':{
+        'type': 'genymotion',
+        'name': 'i-013e97ad5e051c647',
+        'address': '172.31.62.3:5555',
     }
 }
 
