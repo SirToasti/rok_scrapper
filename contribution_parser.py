@@ -4,6 +4,41 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+coordinates = config.coordinates['1920x1080'].copy()
+
+def calibrate_coordinates(profile_bbox, info_bbox):
+    reference = config.coordinates['1920x1080'].copy()
+    profile_transformer = common.ocr.make_transformer(reference['profile_bbox'], profile_bbox)
+    info_transformer = common.ocr.make_transformer(reference['more_info_bbox'], info_bbox)
+    profile_keys = [
+        'governor_id',
+        'name',
+        'more_info',
+        'expand_kill_points',
+        'close_profile',
+        'mail',
+        'total_kill_points',
+        't1_kills',
+        't2_kills',
+        't3_kills',
+        't4_kills',
+        't5_kills',
+    ]
+    info_keys = [
+        'power',
+        'deads',
+        'rss_gathered',
+        'rss_assistance',
+        'helps',
+        'close_more_info',
+        'search_button',
+    ]
+    for key in profile_keys:
+        coordinates[key] = profile_transformer(reference[key])
+    for key in info_keys:
+        coordinates[key] = info_transformer(reference[key])
+
+
 def parse_stats(kills_image, more_info_image, governor_id, name):
     try:
         kills = parse_kill_image(kills_image)
@@ -23,8 +58,6 @@ def parse_stats(kills_image, more_info_image, governor_id, name):
 
 
 def parse_kill_image(image):
-    w, h = image.size
-    coordinates = config.coordinates['{}x{}'.format(w, h)]
     total_crop = image.crop(coordinates['total_kill_points'])
     t1_crop = image.crop(coordinates['t1_kills'])
     t2_crop = image.crop(coordinates['t2_kills'])
@@ -50,8 +83,6 @@ def parse_kill_image(image):
 
 
 def parse_more_info_image(image):
-    w, h = image.size
-    coordinates = config.coordinates['{}x{}'.format(w, h)]
     power_crop = image.crop(coordinates['power'])
     dead_crop = image.crop(coordinates['deads'])
     rss_gathered_crop = image.crop(coordinates['rss_gathered'])

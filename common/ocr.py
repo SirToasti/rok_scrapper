@@ -7,6 +7,29 @@ logger = logging.getLogger(__name__)
 
 locale.setlocale(locale.LC_NUMERIC, locale.getlocale())
 
+
+def make_transformer(reference_bbox, actual_bbox):
+    def transform_point(x,  y):
+        x -= reference_bbox[0]
+        y -= reference_bbox[1]
+        x /= reference_bbox[2] - reference_bbox[0]
+        y /= reference_bbox[3] - reference_bbox[1]
+        x *= actual_bbox[2] - actual_bbox[0]
+        y *= actual_bbox[3] - actual_bbox[1]
+        x += actual_bbox[0]
+        y += actual_bbox[1]
+        return x, y
+
+    def transform(tuple):
+        if len(tuple) == 2:
+            x, y = transform_point(tuple[0], tuple[1])
+            return x, y
+        if len(tuple) == 4:
+            x0, y0 = transform_point(tuple[0], tuple[1])
+            x1, y1 = transform_point(tuple[2], tuple[3])
+            return x0, y0, x1, y1
+    return transform
+
 def get_black_and_white(image, thresh=130):
     fn = lambda  x : 255 if x > thresh else 0
     return image.convert('L').point(fn, mode='1')

@@ -1,17 +1,23 @@
 import subprocess
 from ppadb.client import Client as AdbClient
-from PIL import Image
+from PIL import Image, ImageChops
 import re
 import time
 import urllib.parse
 import boto3
 import logging
+import config
+import common.ocr
 
 client = AdbClient(host='127.0.0.1', port=5037)
 ec2_client = boto3.client('ec2')
 ec2_resource = boto3.resource('ec2')
 
 logger = logging.getLogger(__name__)
+
+reference_patch = Image.open(r'samples\test_patch_a.png')
+reference_patch_b = Image.open(r'samples\test_patch_b.png')
+reference_patch_c = Image.open(r'samples\test_patch_c.png')
 
 class Rok_Emulator:
     def __init__(self, config):
@@ -32,9 +38,44 @@ class Rok_Emulator:
 
     def start_rok(self):
         self.device.shell("monkey -p com.lilithgame.roc.gp -c android.intent.category.LAUNCHER 1")
-        time.sleep(60)  # naive sleep for now. TODO: handle KE screen and stuff
-        self.get_screen()
+        i = 0
+        while i < 12:
+            screen = self.get_screen()
+            if self.need_to_reconnect(screen):
+                logger.warning('Need to reconnect...')
+                self.tap_location((960, 700))
+                i = 0
+                continue
+            result = self.finished_loading(screen)
+            if result is not None:
+                print('layout {}'.format(result))
+                break
+            time.sleep(10)
+            i += 1
+        # time.sleep(60)  # naive sleep for now. TODO: handle KE screen and stuff
+        self.get_screen().save('output/{}_startup_{}.png'.format(self.name, 'end'))
 
+
+    def need_to_reconnect(self, screen):
+        try:
+            result, _ = common.ocr.get_text(screen.crop(config.coordinates['1920x1080']['connect']))
+            return 'CONFIRM' in result
+        except:
+            return False
+
+    def finished_loading(self, screen):
+        test_patch = screen.crop((18, 0, 130, 122))
+        test_patch.save('output/test_patch.png')
+        im = ImageChops.difference(reference_patch, test_patch).convert('1')
+        if im.getbbox() is None:
+            return 'a'
+        im2 = ImageChops.difference(reference_patch_b, test_patch).convert('1')
+        if im2.getbbox() is None:
+            return 'b'
+        im3 = ImageChops.difference(reference_patch_c, test_patch).convert('1')
+        if im3.getbbox() is None:
+            return 'c'
+        return None
 
     def close_rok(self):
         self.device.shell("input keyevent KEYCODE_HOME")

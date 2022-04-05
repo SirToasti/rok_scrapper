@@ -33,6 +33,7 @@ emulators = {
 
 coordinates = {
     '1920x1080': {
+        'connect': (790, 665, 1130, 735),
         'own_profile': (75,60),
         'rankings': (665, 790),
         'individual_power': (465, 615),
@@ -66,7 +67,8 @@ coordinates = {
         'rss_gathered': (1330, 740, 1580, 790),
         'rss_assistance': (1330, 810, 1580, 860),
         'helps': (1330, 885, 1580, 935),
-
+        'profile_bbox': (227, 83, 1692, 1006),
+        'more_info_bbox': (190, 23, 1730, 1060),
     }
 }
 

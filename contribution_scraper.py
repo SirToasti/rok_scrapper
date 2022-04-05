@@ -6,10 +6,19 @@ import re
 import hashlib
 import time
 import contribution_parser
+from PIL import Image
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+def get_window_bounds(image):
+    thresh = 40
+    fn = lambda x: 255 if x > thresh else 0
+    mask = image.convert('L').point(fn, mode='1')
+    black = Image.new('RGB', image.size)
+    masked = Image.composite(image, black, mask)
+    return masked.getbbox()
 
 class StatsScraper:
     def __init__(self, emulator, storage, resolution, limit, kingdom, date, parse=False):
@@ -57,6 +66,20 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['own_profile'])
         self.emulator.tap_location(self.coordinates['rankings'])
         self.emulator.tap_location(self.coordinates['individual_power'])
+
+    def calibrate(self):
+        self.emulator.tap_location(self.coordinates['row_1'])
+        profile = self.emulator.get_screen()
+        profile_bbox = get_window_bounds(profile)
+        self.emulator.tap_location(self.coordinates['more_info'])
+        more_info = self.emulator.get_screen()
+        more_info_bbox = get_window_bounds(more_info)
+        contribution_parser.calibrate_coordinates(profile_bbox, more_info_bbox)
+        self.storage.save_image(profile, '../errors/{}_{}_calibration_a.png'.format(self.date, self.emulator.name))
+        self.storage.save_image(more_info, '../errors/{}_{}_calibration_b.png'.format(self.date, self.emulator.name))
+        self.coordinates = contribution_parser.coordinates.copy()
+        self.emulator.tap_location(self.coordinates['close_more_info'])
+        self.emulator.tap_location(self.coordinates['close_profile'])
 
     def close_leaderboard_scraper(self):
         self.emulator.tap_location(self.coordinates['close_big_window'])

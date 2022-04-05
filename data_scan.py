@@ -30,7 +30,6 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         session.add(models.Pulls(pull_id=pull_label, timestamp=timestamp))
         governors_to_find = {str(row.Governors.governor_id): row.Governors.last_known_name for row in session.execute(select(models.Governors).where(models.Governors.ignore == False))}
 
-
         def add_governor_data_to_session(stat):
             session.merge(models.Governor_Data(
                 pull_id=pull_label,
@@ -62,6 +61,7 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', limit, kingdom, pull_label,
                                                     parse=True)
         scraper.setup_leaderboard_scraper()
+        scraper.calibrate()
         scraper.grab_screenshots()
         scraper.close_leaderboard_scraper()
         home_kd_emulator.close_rok()
@@ -72,6 +72,9 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         lk_emulator.initialize()
         lk_emulator.start_rok()
         lk_low_power_scraper = contribution_scraper.StatsScraper(lk_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
+        lk_low_power_scraper.setup_leaderboard_scraper()
+        lk_low_power_scraper.calibrate()
+        lk_low_power_scraper.close_leaderboard_scraper()
         lk_low_power_scraper.setup_governor_search()
         for governor_id, last_known_name in governors_to_find.items():
             lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
@@ -83,12 +86,14 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
 
         hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
         home_kd_emulator.start_rok()
+        hk_low_power_scraper.setup_leaderboard_scraper()
+        hk_low_power_scraper.calibrate()
+        hk_low_power_scraper.close_leaderboard_scraper()
         hk_low_power_scraper.setup_governor_search()
         for governor_id, last_known_name in governors_to_find.items():
             hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         home_kd_emulator.close_rok()
         home_kd_emulator.stop()
-
 
         session.commit()
     with engine.connect() as con:
