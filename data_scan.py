@@ -15,6 +15,7 @@ import csv
 import glob
 from PIL import Image
 
+
 parser = argparse.ArgumentParser(description='Do a RoK data scan.')
 parser.add_argument('kingdom')
 parser.add_argument('pull_label')
@@ -185,6 +186,60 @@ def load_stats(kingdom, pull_label):
     with open(output_file, 'r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         return [cast_types(row) for row in reader]
+
+def find_specific_governors(governors_to_find, kingdom, pull_label, home_kd_emulator_id):
+    engine = db.init_db(config.databases['rds'])
+    home_kd_emulator = common.emulator.Rok_Emulator(config.emulators[home_kd_emulator_id])
+    storage = common.storage.FileStorage(prefix=r'{}\{}'.format(kingdom, pull_label))
+
+    with Session(engine) as session:
+        def add_governor_data_to_session(stat):
+            session.merge(models.Governor_Data(
+                pull_id=pull_label,
+                governor_id=stat['governor_id'],
+                governor_name=stat['name'],
+                power=stat['power'],
+                deads=stat['deads'],
+                kill_points=stat['kill_points'],
+                t1_kills=stat['t1_kills'],
+                t2_kills=stat['t2_kills'],
+                t3_kills=stat['t3_kills'],
+                t4_kills=stat['t4_kills'],
+                t5_kills=stat['t5_kills'],
+                rss_gathered=stat['rss_gathered'],
+                rss_assistance=stat['rss_assistance'],
+                helps=stat['helps'],
+                kill_parse_error=stat['check_kills']
+            ))
+            session.merge(models.Governors(
+                governor_id=stat['governor_id'],
+                last_known_name=stat['name'],
+                last_seen=pull_label,
+                ignore=False
+            ))
+
+        home_kd_emulator.initialize()
+        home_kd_emulator.start_rok()
+        hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
+        hk_low_power_scraper.setup_leaderboard_scraper()
+        hk_low_power_scraper.calibrate()
+        hk_low_power_scraper.close_leaderboard_scraper()
+
+        hk_low_power_scraper.setup_governor_search()
+        for governor_id, last_known_name in governors_to_find.items():
+            hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
+        home_kd_emulator.close_rok()
+        home_kd_emulator.stop()
+
+        for stat in hk_low_power_scraper.parsed_data:
+            add_governor_data_to_session(stat)
+
+        session.commit()
+
+        with engine.connect() as con:
+            con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
+
+        storage.upload_to_s3()
 
 def main():
     args = parser.parse_args()
