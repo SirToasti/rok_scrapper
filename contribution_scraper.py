@@ -59,7 +59,8 @@ class StatsScraper:
                 self.process_profile()
             else:
                 logger.warning('profile {} failed to load'.format(i))
-                raise Exception('Too many unparsable profiles')
+                logger.error('Too many unparsable profiles')
+                break
 
     def setup_leaderboard_scraper(self):
         self.emulator.start_rok()
@@ -124,7 +125,8 @@ class StatsScraper:
             logger.error('unrecognized governor id that was hashed: {}'.format(governor_id))
         if self.parse_inline and governor_id.isnumeric():
             data = contribution_parser.parse_stats(kills, more_info, governor_id, name)
-            self.parsed_data.append(data)
+            if data:
+                self.parsed_data.append(data)
         return governor_id
 
     def is_on_profile(self, i, depth=1):
