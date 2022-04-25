@@ -101,7 +101,7 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['search_button'])
         time.sleep(2)
         self.emulator.tap_location(self.coordinates['view_profile'])
-        if not self.is_on_profile(governor_id, 3):
+        if not self.is_on_profile(governor_id, 2):
             logger.warning('unable to find {}'.format(governor_name))
         else:
             found_id = self.process_profile()
@@ -109,6 +109,7 @@ class StatsScraper:
                 logger.warning('did not find the correct profile for id:{} name:{}'.format(governor_id, governor_name))
                 if not is_retry:
                     self.emulator.tap_location(self.coordinates['close_big_window'])
+                    logger.info('retrying {}'.format(governor_name))
                     self.search_for_governor(governor_name, governor_id, is_retry=True)
                     return
         self.emulator.tap_location(self.coordinates['close_big_window'])
