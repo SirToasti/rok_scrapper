@@ -89,11 +89,11 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         for governor_id, last_known_name in governors_to_find.items():
             lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         lk_emulator.close_rok()
-        lk_emulator.stop()
 
         for stat in lk_low_power_scraper.parsed_data:
             add_governor_data_to_session(stat)
 
+        print(len(governors_to_find))
         hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
         home_kd_emulator.initialize()
         home_kd_emulator.start_rok()
@@ -104,7 +104,24 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         for governor_id, last_known_name in governors_to_find.items():
             hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         home_kd_emulator.close_rok()
-        home_kd_emulator.stop()
+
+        for stat in hk_low_power_scraper.parsed_data:
+            add_governor_data_to_session(stat)
+
+        lk_low_power_scraper.parsed_data = []
+        print(len(governors_to_find))
+        for governor_id, last_known_name in governors_to_find.items():
+            lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
+        lk_emulator.close_rok()
+
+        for stat in lk_low_power_scraper.parsed_data:
+            add_governor_data_to_session(stat)
+
+        hk_low_power_scraper.parsed_data = []
+        print(len(governors_to_find))
+        for governor_id, last_known_name in governors_to_find.items():
+            hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
+        home_kd_emulator.close_rok()
 
         for stat in hk_low_power_scraper.parsed_data:
             add_governor_data_to_session(stat)
