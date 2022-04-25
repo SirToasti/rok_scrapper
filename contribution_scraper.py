@@ -91,21 +91,25 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['own_profile'])
         self.emulator.tap_location(self.coordinates['settings'])
 
-    def search_for_governor(self, governor_name, governor_id):
+    def search_for_governor(self, governor_name, governor_id, is_retry=False):
         self.emulator.tap_location(self.coordinates['search_governor'])
         self.emulator.tap_location(self.coordinates['search_bar'])
         self.emulator.set_clipboard(governor_name)
         self.emulator.paste()
+        time.sleep(.1)
         self.emulator.tap_location(self.coordinates['search_button'])  # exit text entry
         self.emulator.tap_location(self.coordinates['search_button'])
         time.sleep(2)
         self.emulator.tap_location(self.coordinates['view_profile'])
-        if not self.is_on_profile(governor_id):
+        if not self.is_on_profile(governor_id, 3):
             logger.warning('unable to find {}'.format(governor_name))
         else:
             found_id = self.process_profile()
             if str(governor_id) != found_id:
                 logger.warning('did not find the correct profile for id:{} name:{}'.format(governor_id, governor_name))
+                if not is_retry:
+                    self.emulator.tap_location(self.coordinates['close_big_window'])
+                    self.search_for_governor(governor_name, governor_id, is_retry=True)
         self.emulator.tap_location(self.coordinates['close_big_window'])
 
     def process_profile(self):
