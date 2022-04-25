@@ -110,6 +110,7 @@ class StatsScraper:
                 if not is_retry:
                     self.emulator.tap_location(self.coordinates['close_big_window'])
                     self.search_for_governor(governor_name, governor_id, is_retry=True)
+                    return
         self.emulator.tap_location(self.coordinates['close_big_window'])
 
     def process_profile(self):
