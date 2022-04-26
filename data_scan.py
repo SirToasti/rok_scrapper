@@ -109,6 +109,11 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
 
         lk_low_power_scraper.parsed_data = []
+        lk_emulator.start_rok()
+        lk_low_power_scraper.setup_leaderboard_scraper()
+        lk_low_power_scraper.calibrate()
+        lk_low_power_scraper.close_leaderboard_scraper()
+        lk_low_power_scraper.setup_governor_search()
         print(len(governors_to_find))
         for governor_id, last_known_name in governors_to_find.items():
             lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
@@ -119,6 +124,11 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
 
         hk_low_power_scraper.parsed_data = []
         print(len(governors_to_find))
+        home_kd_emulator.start_rok()
+        hk_low_power_scraper.setup_leaderboard_scraper()
+        hk_low_power_scraper.calibrate()
+        hk_low_power_scraper.close_leaderboard_scraper()
+        hk_low_power_scraper.setup_governor_search()
         for governor_id, last_known_name in governors_to_find.items():
             hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         home_kd_emulator.close_rok()

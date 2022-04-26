@@ -79,6 +79,7 @@ class Rok_Emulator:
 
     def close_rok(self):
         self.device.shell("input keyevent KEYCODE_HOME")
+        self.device.shell("am force-stop com.lilithgame.roc.gp")
 
     def tap_location(self, coords):
         self.device.shell("input tap {} {}".format(coords[0], coords[1]))
