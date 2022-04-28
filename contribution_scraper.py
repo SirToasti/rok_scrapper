@@ -76,6 +76,7 @@ class StatsScraper:
         more_info = self.emulator.get_screen()
         more_info_bbox = get_window_bounds(more_info)
         contribution_parser.calibrate_coordinates(profile_bbox, more_info_bbox)
+        logger.info('calibrated coords: {}'.format(repr(contribution_parser.coordinates)))
         self.storage.save_image(profile, '../errors/{}_{}_calibration_a.png'.format(self.date, self.emulator.name))
         self.storage.save_image(more_info, '../errors/{}_{}_calibration_b.png'.format(self.date, self.emulator.name))
         self.coordinates = contribution_parser.coordinates.copy()

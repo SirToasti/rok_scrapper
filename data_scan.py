@@ -79,6 +79,7 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
 
         print(len(governors_to_find))
+        logger.info('Starting Governor Search LK Pass 1: {} to find'.format(governors_to_find))
         lk_emulator.initialize()
         lk_emulator.start_rok()
         lk_low_power_scraper = contribution_scraper.StatsScraper(lk_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
@@ -94,6 +95,7 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
 
         print(len(governors_to_find))
+        logger.info('Starting Governor Search HK Pass 1: {} to find'.format(governors_to_find))
         hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
         home_kd_emulator.initialize()
         home_kd_emulator.start_rok()
@@ -109,12 +111,12 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
 
         lk_low_power_scraper.parsed_data = []
+        logger.info('Starting Governor Search LK Pass 2: {} to find'.format(governors_to_find))
         lk_emulator.start_rok()
         lk_low_power_scraper.setup_leaderboard_scraper()
         lk_low_power_scraper.calibrate()
         lk_low_power_scraper.close_leaderboard_scraper()
         lk_low_power_scraper.setup_governor_search()
-        print(len(governors_to_find))
         for governor_id, last_known_name in governors_to_find.items():
             lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         lk_emulator.close_rok()
@@ -124,7 +126,7 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
 
         hk_low_power_scraper.parsed_data = []
-        print(len(governors_to_find))
+        logger.info('Starting Governor Search HK Pass 2: {} to find'.format(governors_to_find))
         home_kd_emulator.start_rok()
         hk_low_power_scraper.setup_leaderboard_scraper()
         hk_low_power_scraper.calibrate()
