@@ -39,6 +39,15 @@ def calibrate_coordinates(profile_bbox, info_bbox):
         coordinates[key] = info_transformer(reference[key])
 
 
+kill_reference_coordinates = {
+    'total_kill_points': (167, 37, 404, 68),
+    't1_kills': (94, 286, 304, 316),
+    't2_kills': (94, 336, 304, 366),
+    't3_kills': (94, 391, 304, 421),
+    't4_kills': (94, 441, 304, 471),
+    't5_kills': (94, 496, 304, 526)
+}
+
 def parse_stats(kills_image, more_info_image, governor_id, name):
     try:
         kills = parse_kill_image(kills_image)
@@ -56,14 +65,39 @@ def parse_stats(kills_image, more_info_image, governor_id, name):
         logger.exception(e)
         return None
 
+def get_kill_box(im):
+    bw = common.ocr.get_black_and_white(im, 240).convert('RGB')
+    bbox = bw.getbbox()
+    bw = bw.crop(bbox)
+    w, h = bw.size
+    top = h - 15
+    left = w - 15
+    while bw.getpixel((w - 15, top)) == (255, 255, 255):
+        top -= 1
+    while bw.getpixel((left, h - 15)) == (255, 255, 255):
+        left -= 1
+    box_bottom = h - 15
+    while bw.getpixel((w-50, box_bottom)) == (255, 255, 255):
+        box_bottom -= 1
+    kill_bbox = (bbox[2] - (w - left) + 1, bbox[3] - (h - top) + 1, bbox[2], bbox[3])
+    return im.crop(kill_bbox), box_bottom - top + 1
+
+def get_scaled_coordinates(hk, vk):
+    coordinates = kill_reference_coordinates.copy()
+    for key in coordinates:
+        coordinates[key] = (coordinates[key][0]*hk, coordinates[key][1]*vk, coordinates[key][2]*hk, coordinates[key][3]*vk)
+    return coordinates
 
 def parse_kill_image(image):
-    total_crop = image.crop(coordinates['total_kill_points'])
-    t1_crop = image.crop(coordinates['t1_kills'])
-    t2_crop = image.crop(coordinates['t2_kills'])
-    t3_crop = image.crop(coordinates['t3_kills'])
-    t4_crop = image.crop(coordinates['t4_kills'])
-    t5_crop = image.crop(coordinates['t5_kills'])
+    kill_box, box_bottom = get_kill_box(image)
+    w, h = kill_box.size
+    kill_coordinates = get_scaled_coordinates(w/800, box_bottom/537)
+    total_crop = kill_box.crop(kill_coordinates['total_kill_points'])
+    t1_crop = kill_box.crop(kill_coordinates['t1_kills'])
+    t2_crop = kill_box.crop(kill_coordinates['t2_kills'])
+    t3_crop = kill_box.crop(kill_coordinates['t3_kills'])
+    t4_crop = kill_box.crop(kill_coordinates['t4_kills'])
+    t5_crop = kill_box.crop(kill_coordinates['t5_kills'])
     total_kill_points = common.ocr.get_number(total_crop, label=None, dark_on_light=True)
     t1_kills = common.ocr.get_number(t1_crop, label=None, dark_on_light=True)
     t2_kills = common.ocr.get_number(t2_crop, label=None, dark_on_light=True)
