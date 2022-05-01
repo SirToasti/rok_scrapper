@@ -4,3 +4,4 @@ __pycache__
 venv
 scratchpad.log
 *.log
+kills_to_fix/

@@ -81,9 +81,9 @@ class Rok_Emulator:
         self.device.shell("input keyevent KEYCODE_HOME")
         self.device.shell("am force-stop com.lilithgame.roc.gp")
 
-    def tap_location(self, coords):
+    def tap_location(self, coords, delay=1):
         self.device.shell("input tap {} {}".format(coords[0], coords[1]))
-        time.sleep(1)
+        time.sleep(delay)
 
     def get_screen(self):
         self.device.shell("screencap -p /sdcard/Pictures/screen.png")

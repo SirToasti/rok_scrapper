@@ -18,7 +18,21 @@ def get_window_bounds(image):
     mask = image.convert('L').point(fn, mode='1')
     black = Image.new('RGB', image.size)
     masked = Image.composite(image, black, mask)
-    return masked.getbbox()
+    rough_box = masked.getbbox()
+    top = rough_box[1]
+    left = rough_box[0]
+    right = rough_box[2]
+    bottom = rough_box[3]
+    masked.show()
+    while masked.getpixel((left+15, top)) == (0, 0, 0):
+        top += 1
+    while masked.getpixel((left, top+15)) == (0, 0, 0):
+        left += 1
+    while masked.getpixel((left+15, bottom)) == (0, 0, 0):
+        bottom -= 1
+    while masked.getpixel((right, top+15)) == (0, 0, 0):
+        right -= 1
+    return left, top, right, bottom
 
 class StatsScraper:
     def __init__(self, emulator, storage, resolution, limit, kingdom, date, parse=False):
@@ -69,10 +83,10 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['individual_power'])
 
     def calibrate(self):
-        self.emulator.tap_location(self.coordinates['row_1'])
+        self.emulator.tap_location(self.coordinates['row_1'], 1.5)
         profile = self.emulator.get_screen()
         profile_bbox = get_window_bounds(profile)
-        self.emulator.tap_location(self.coordinates['more_info'])
+        self.emulator.tap_location(self.coordinates['more_info'], 1.5)
         more_info = self.emulator.get_screen()
         more_info_bbox = get_window_bounds(more_info)
         contribution_parser.calibrate_coordinates(profile_bbox, more_info_bbox)
