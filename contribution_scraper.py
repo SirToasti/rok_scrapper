@@ -23,15 +23,17 @@ def get_window_bounds(image):
     left = rough_box[0]
     right = rough_box[2]
     bottom = rough_box[3]
-    masked.show()
+    # masked.show()
     while masked.getpixel((left+15, top)) == (0, 0, 0):
         top += 1
-    while masked.getpixel((left, top+15)) == (0, 0, 0):
-        left += 1
-    while masked.getpixel((left+15, bottom)) == (0, 0, 0):
-        bottom -= 1
-    while masked.getpixel((right, top+15)) == (0, 0, 0):
-        right -= 1
+    # while masked.getpixel((left, top+15)) == (0, 0, 0):
+    #     left += 1
+    # while masked.getpixel((left+15, bottom)) == (0, 0, 0):
+    #     bottom -= 1
+    # while masked.getpixel((right, top+15)) == (0, 0, 0):
+    #     right -= 1
+    print(rough_box)
+    print(left, top, right, bottom)
     return left, top, right, bottom
 
 class StatsScraper:
@@ -94,6 +96,7 @@ class StatsScraper:
         self.storage.save_image(profile, '../errors/{}_{}_calibration_a.png'.format(self.date, self.emulator.name))
         self.storage.save_image(more_info, '../errors/{}_{}_calibration_b.png'.format(self.date, self.emulator.name))
         self.coordinates = contribution_parser.coordinates.copy()
+        print(self.coordinates)
         self.emulator.tap_location(self.coordinates['close_more_info'])
         self.emulator.tap_location(self.coordinates['close_profile'])
 
@@ -170,7 +173,10 @@ class StatsScraper:
 
     def extract_governor_id(self, image):
         id_crop = image.crop(self.coordinates['governor_id'])
-        text, raw = common.ocr.get_text(id_crop)
+
+        text, raw = common.ocr.get_text(id_crop, label='gov_id')
+        print(text, raw)
+
         match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
         if not match:
             logger.warning('Failed to parse governor id: {}'.format(text))

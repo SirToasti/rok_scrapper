@@ -12,10 +12,10 @@ def make_transformer(reference_bbox, actual_bbox):
     def transform_point(x,  y):
         x -= reference_bbox[0]
         y -= reference_bbox[1]
-        x /= reference_bbox[2] - reference_bbox[0]
-        y /= reference_bbox[3] - reference_bbox[1]
-        x *= actual_bbox[2] - actual_bbox[0]
-        y *= actual_bbox[3] - actual_bbox[1]
+        x /= reference_bbox[2] - reference_bbox[0] + 1
+        y /= reference_bbox[3] - reference_bbox[1] + 1
+        x *= actual_bbox[2] - actual_bbox[0] + 1
+        y *= actual_bbox[3] - actual_bbox[1] + 1
         x += actual_bbox[0]
         y += actual_bbox[1]
         return x, y
@@ -49,8 +49,13 @@ def get_text(image, label=None, dark_on_light=False):
     # image.show()
     if dark_on_light:
         cleaned_image = trim_to_bbox(get_black_and_white(image, thresh=132).convert('RGB'))
+    elif label == 'gov_id':
+        cleaned_image = trim_to_bbox(ImageOps.invert(get_black_and_white(image, thresh=140).convert('RGB')))
     else:
         cleaned_image = trim_to_bbox(ImageOps.invert(get_black_and_white(image).convert('RGB')))
+    if label:
+        # cleaned_image.show()
+        pass
     data = pytesseract.image_to_string(cleaned_image, config=r'--psm 8 --oem 0', output_type=pytesseract.Output.DICT)
     value = data['text'].strip()
     return value, data

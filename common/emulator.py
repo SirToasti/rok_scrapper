@@ -48,7 +48,7 @@ class Rok_Emulator:
                 continue
             result = self.finished_loading(screen)
             if result is not None:
-                print('layout {}'.format(result))
+                logger.info('layout {}'.format(result))
                 break
             time.sleep(10)
             i += 1

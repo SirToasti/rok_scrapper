@@ -49,7 +49,7 @@ coordinates = {
         'row_4': (960, 694),
         'row_5': (960, 816),
         'row_6': (960, 938),
-        'governor_id': (892, 284, 1200, 320),
+        'governor_id': (775, 284, 1200, 320),
         'name': (840, 340),
         'more_info': (470, 800),
         'expand_kill_points': (1342, 421),
