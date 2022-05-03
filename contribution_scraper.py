@@ -175,6 +175,8 @@ class StatsScraper:
         id_crop = image.crop(self.coordinates['governor_id'])
 
         text, raw = common.ocr.get_text(id_crop, label='gov_id')
+        while 'l' in text:
+            text = text.replace('l', '1', 1)
         print(text, raw)
 
         match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
