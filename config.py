@@ -21,8 +21,8 @@ emulators = {
     },
     'genymotion-2402':{
         'type': 'genymotion',
-        'name': 'i-02be8754e90927fd5',
-        'address': '172.31.63.60:5555',
+        'name': 'i-05ff5d2d186b9eb54',
+        'address': '172.31.49.183:5555',
     },
     'genymotion-2402-lk':{
         'type': 'genymotion',
