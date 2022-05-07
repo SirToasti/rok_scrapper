@@ -77,7 +77,7 @@ def get_kill_box(im):
     while bw.getpixel((left, h - 15)) == (255, 255, 255):
         left -= 1
     box_bottom = h - 15
-    while bw.getpixel((w-50, box_bottom)) == (255, 255, 255):
+    while bw.getpixel((w-30, box_bottom)) == (255, 255, 255):
         box_bottom -= 1
     kill_bbox = (bbox[2] - (w - left) + 1, bbox[3] - (h - top) + 1, bbox[2], bbox[3])
     return im.crop(kill_bbox), box_bottom - top + 1

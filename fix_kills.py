@@ -71,7 +71,7 @@ def get_kill_box(im):
     while bw.getpixel((left, h - 15)) == (255, 255, 255):
         left -= 1
     box_bottom = h - 15
-    while bw.getpixel((w-50, box_bottom)) == (255, 255, 255):
+    while bw.getpixel((w-30, box_bottom)) == (255, 255, 255):
         box_bottom -= 1
     kill_bbox = (bbox[2] - (w - left) + 1, bbox[3] - (h - top) + 1, bbox[2], bbox[3])
     return im.crop(kill_bbox), box_bottom - top + 1
@@ -114,7 +114,7 @@ def main():
     #     w, h = kill_box.size
     #     print(kill_box.getpixel((w-50, h-1)))
     #
-    # with Image.open('kills_to_fix/2022-04-26_02-test/44646883_kills.png') as im:
+    # with Image.open('kills_to_fix/9573565_kills.png') as im:
     #     kill_box, box_bottom = get_kill_box(im)
     #     print(kill_box.size, box_bottom)
     #     w, h = kill_box.size
