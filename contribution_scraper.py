@@ -119,7 +119,7 @@ class StatsScraper:
         self.emulator.tap_location(self.coordinates['search_button'])
         time.sleep(2)
         self.emulator.tap_location(self.coordinates['view_profile'])
-        if not self.is_on_profile(governor_id, 2):
+        if not self.is_on_profile(governor_id, 3):
             logger.warning('unable to find {}'.format(governor_name))
         else:
             found_id = self.process_profile()

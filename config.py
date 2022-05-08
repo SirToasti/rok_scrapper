@@ -19,15 +19,20 @@ emulators = {
         'name': 'lasfdjfd-dev-4',
         'address': '127.0.0.1:5675'
     },
+    'lasfdjfd-dev-5': {
+        'type': 'bluestacks',
+        'name': 'lasfdjfd-dev-5',
+        'address': '127.0.0.1:5555'
+    },
     'genymotion-2402':{
         'type': 'genymotion',
-        'name': 'i-05ff5d2d186b9eb54',
-        'address': '172.31.49.183:5555',
+        'name': 'i-0fc08186f4235fe9a',
+        'address': '172.31.62.48:5555',
     },
     'genymotion-2402-lk':{
         'type': 'genymotion',
-        'name': 'i-0dd709b691b89e78e',
-        'address': '172.31.52.66:5555',
+        'name': 'i-096a24e2ef956cdb7',
+        'address': '172.31.53.174:5555',
     }
 }
 
