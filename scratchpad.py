@@ -138,12 +138,8 @@ def pc_test():
     for gov_id in gov_ids:
         scraper.search_for_governor_by_id(gov_id)
         pass
+    emulator.close_rok()
 
-    while True:
-        x, y = pyautogui.position()
-        positionStr = 'X: ' + str(x).rjust(4) + ' Y: ' + str(y).rjust(4)
-        print(positionStr)
-        time.sleep(1)
 
 def kill_parse_debug():
     with Image.open('output/files/2402/pc_test/70180227_kills.png') as im:

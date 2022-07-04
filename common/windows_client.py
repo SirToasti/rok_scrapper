@@ -32,6 +32,10 @@ class PC_Client:
         self.setup_governor_search()
         pass
 
+    def close_rok(self):
+        game_window = pygetwindow.getWindowsWithTitle('Rise of Kingdoms')[0]
+        game_window.close()
+
     def make_fullscreen(self):
         game_window = pygetwindow.getWindowsWithTitle('Rise of Kingdoms')[0]
         game_window.activate()
