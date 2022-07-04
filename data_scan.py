@@ -233,16 +233,19 @@ def find_specific_governors(governors_to_find, kingdom, pull_label, home_kd_emul
             hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         home_kd_emulator.close_rok()
         home_kd_emulator.stop()
+        logger.info('finished searches')
 
         for stat in hk_low_power_scraper.parsed_data:
             add_governor_data_to_session(stat)
-
+        logger.info('finished db inserts')
         session.commit()
 
         with engine.connect() as con:
             con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
 
+        logger.info('starting upload to s3')
         storage.upload_to_s3()
+        logger.info('finished upload to s3')
 
 def main():
     args = parser.parse_args()

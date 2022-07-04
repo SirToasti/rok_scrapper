@@ -132,6 +132,13 @@ class StatsScraper:
                     return
         self.emulator.tap_location(self.coordinates['close_big_window'])
 
+    def alt_govenor_search(self, governor_name, governor_id, is_retry=False):
+        self.emulator.tap_location(self.coordinates['search_governor'])
+        # self.emulator.tap_location(self.coordinates['search_bar'], .05)
+        # self.emulator.tap_location(self.coordinates['search_bar'], .5)
+        self.emulator.tap_location(self.coordinates['search_bar'])
+        self.emulator.type(governor_name)
+
     def process_profile(self):
         self.emulator.tap_location(self.coordinates['name'])
         self.emulator.tap_location(self.coordinates['expand_kill_points'])
@@ -188,6 +195,29 @@ class StatsScraper:
         if match.group(2):
             logger.warning('Governor {} has migrated to KD{}'.format(match.group(1), match.group(2)))
         return match.group(1)
+
+    def setup_governor_search_by_id(self):
+        print('setting up governor search')
+        self.emulator.tap_location((300 * 1920/2560, 1355 * 1080/1440))
+        self.emulator.tap_location((55 * 1920/2560, 45 * 1080/1440))
+        self.emulator.tap_location((1890 * 1920/2560, 725 * 1080/1440))
+
+    def search_for_governor_by_id(self, gov_id):
+        print('starting governor search')
+        self.emulator.tap_location((300 * 1920/2560, 1355 * 1080/1440))
+        self.emulator.tap_location((55 * 1920/2560, 45 * 1080/1440))
+        self.emulator.tap_location((125 * 1920/2560, 325 * 1080/1440))
+        self.emulator.tap_location((800 * 1920/2560, 275 * 1080/1440))
+        self.emulator.type(gov_id)
+        self.emulator.tap_location((1740 * 1920/2560, 275 * 1080/1440))
+        self.emulator.tap_location((790 * 1920/2560, 550 * 1080/1440))
+        self.emulator.tap_location((780 * 1920/2560, 285 * 1080/1440))
+        time.sleep(2)
+        if not self.is_on_profile(gov_id, 0):
+            logger.warning('unable to find {}'.format(gov_id))
+        else:
+            found_id = self.process_profile()
+
 
 def run_stats_scraper(kingdom, date, emulator, storage, limit):
     scraper = StatsScraper(emulator, storage, '1920x1080', limit, kingdom, date)
