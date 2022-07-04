@@ -22,19 +22,21 @@ coords = make_upscaled_coords()
 class PC_Client:
     def __init__(self):
         self.target_window_size = (1920, 1080)
+        # self.target_window_size = (2560, 1440)
+        self.game_client = None
         pass
 
     def initialize(self):
         # subprocess.Popen(["C:\Program Files (x86)\ROK\launcher.exe"], cwd="C:\Program Files (x86)\ROK")
-        subprocess.Popen(["C:\Program Files (x86)\ROK\MASS.exe", "a5117180fe06c8dcc14ff00346d486c8"], cwd="C:\Program Files (x86)\ROK")
+        self.game_client = subprocess.Popen(["C:\Program Files (x86)\ROK\MASS.exe", "a5117180fe06c8dcc14ff00346d486c8"], cwd="C:\Program Files (x86)\ROK")
         time.sleep(30)
         self.make_fullscreen()
         self.setup_governor_search()
         pass
 
     def close_rok(self):
-        game_window = pygetwindow.getWindowsWithTitle('Rise of Kingdoms')[0]
-        game_window.close()
+        if self.game_client:
+            self.game_client.terminate()
 
     def make_fullscreen(self):
         game_window = pygetwindow.getWindowsWithTitle('Rise of Kingdoms')[0]
