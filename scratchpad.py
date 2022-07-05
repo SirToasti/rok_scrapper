@@ -125,15 +125,10 @@ def pc_test():
     emulator = common.windows_client.PC_Client()
     emulator.initialize()
     storage = common.storage.FileStorage(prefix=r'{}\{}'.format(kingdom, pull_label))
-    gov_ids = [
-        70180227,
-        # 43967354,
-        # 17686028,
-        # 42265113,
-        # 42243152,
-        # 7626978,
-
-    ]
+    gov_ids = []
+    with open('samples/gov_ids_to_search') as f:
+        for line in f:
+            gov_ids.append(line.strip())
     scraper = contribution_scraper.StatsScraper(emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
     for gov_id in gov_ids:
         scraper.search_for_governor_by_id(gov_id)
