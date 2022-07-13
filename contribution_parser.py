@@ -1,6 +1,7 @@
 import config
 import common.ocr
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ def parse_stats(kills_image, more_info_image, governor_id, name):
         result = {
             'governor_id': governor_id,
             'name': name,
+            'ts': datetime.now()
         }
         result.update(kills)
         result.update(more_info)

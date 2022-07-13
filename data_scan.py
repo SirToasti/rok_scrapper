@@ -24,11 +24,11 @@ parser.add_argument('lk_emulator_id')
 
 logger = logging.getLogger(__name__)
 
-def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
+def run_scraper(kingdom, pull_label, home_kd_emulator_id, name_search_emulator_id):
     limit = 990
     engine = db.init_db(config.databases['rds'])
     home_kd_emulator = common.emulator.Rok_Emulator(config.emulators[home_kd_emulator_id])
-    lk_emulator = common.emulator.Rok_Emulator(config.emulators[lk_emulator_id])
+    name_search_emulator = common.emulator.Rok_Emulator(config.emulators[name_search_emulator_id])
     storage = common.storage.FileStorage(prefix=r'{}\{}'.format(kingdom, pull_label))
     timestamp = datetime.now()
 
@@ -52,7 +52,8 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
                 rss_gathered=stat['rss_gathered'],
                 rss_assistance=stat['rss_assistance'],
                 helps=stat['helps'],
-                kill_parse_error=stat['check_kills']
+                kill_parse_error=stat['check_kills'],
+                timestamp=stat['ts']
             ))
             session.merge(models.Governors(
                 governor_id=stat['governor_id'],
@@ -70,6 +71,7 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
         scraper.grab_screenshots()
         scraper.close_leaderboard_scraper()
         home_kd_emulator.close_rok()
+        home_kd_emulator.stop()
 
         result = scraper.parsed_data
         # result = load_stats(kingdom, pull_label)
@@ -79,44 +81,28 @@ def run_scraper(kingdom, pull_label, home_kd_emulator_id, lk_emulator_id):
             add_governor_data_to_session(stat)
         session.commit()
         print(len(governors_to_find))
-        logger.info('Starting Governor Search LK Pass 1: {} to find'.format(governors_to_find))
-        lk_emulator.initialize()
-        lk_emulator.start_rok()
-        lk_low_power_scraper = contribution_scraper.StatsScraper(lk_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
-        lk_low_power_scraper.setup_leaderboard_scraper()
-        lk_low_power_scraper.calibrate()
-        lk_low_power_scraper.close_leaderboard_scraper()
-        lk_low_power_scraper.setup_governor_search()
+        logger.info('Starting Governor Search by name Pass 1: {} to find'.format(governors_to_find))
+        name_search_emulator.initialize()
+        name_search_emulator.start_rok()
+        low_power_scraper = contribution_scraper.StatsScraper(name_search_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
+        low_power_scraper.setup_leaderboard_scraper()
+        low_power_scraper.calibrate()
+        low_power_scraper.close_leaderboard_scraper()
+        low_power_scraper.setup_governor_search()
         for governor_id, last_known_name in governors_to_find.items():
-            lk_low_power_scraper.search_for_governor(last_known_name, governor_id)
-        lk_emulator.close_rok()
-        lk_emulator.stop()
+            low_power_scraper.search_for_governor(last_known_name, governor_id)
+        name_search_emulator.close_rok()
+        name_search_emulator.stop()
 
-        for stat in lk_low_power_scraper.parsed_data:
+        for stat in low_power_scraper.parsed_data:
             add_governor_data_to_session(stat)
         session.commit()
         print(len(governors_to_find))
-        logger.info('Starting Governor Search HK Pass 1: {} to find'.format(governors_to_find))
-        hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
-        home_kd_emulator.initialize()
-        home_kd_emulator.start_rok()
-        hk_low_power_scraper.setup_leaderboard_scraper()
-        hk_low_power_scraper.calibrate()
-        hk_low_power_scraper.close_leaderboard_scraper()
-        hk_low_power_scraper.setup_governor_search()
-        for governor_id, last_known_name in governors_to_find.items():
-            hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
-        home_kd_emulator.close_rok()
-        home_kd_emulator.stop()
 
-        for stat in hk_low_power_scraper.parsed_data:
-            add_governor_data_to_session(stat)
-
-        session.commit()
-    with engine.connect() as con:
-        con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
-
-    storage.upload_to_s3()
+    # with engine.connect() as con:
+    #     con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
+    #
+    # storage.upload_to_s3()
 
 def parse_stats(kingdom, date):
     kills_pattern = re.compile('(\d+)_kills.png')
@@ -223,14 +209,15 @@ def find_specific_governors(governors_to_find, kingdom, pull_label, home_kd_emul
 
         home_kd_emulator.initialize()
         home_kd_emulator.start_rok()
-        hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 0, kingdom, pull_label, parse=True)
+        hk_low_power_scraper = contribution_scraper.StatsScraper(home_kd_emulator, storage, '1920x1080', 990, kingdom, pull_label, parse=True)
         hk_low_power_scraper.setup_leaderboard_scraper()
         hk_low_power_scraper.calibrate()
+        hk_low_power_scraper.grab_screenshots()
         hk_low_power_scraper.close_leaderboard_scraper()
 
-        hk_low_power_scraper.setup_governor_search()
-        for governor_id, last_known_name in governors_to_find.items():
-            hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
+        # hk_low_power_scraper.setup_governor_search()
+        # for governor_id, last_known_name in governors_to_find.items():
+        #     hk_low_power_scraper.search_for_governor(last_known_name, governor_id)
         home_kd_emulator.close_rok()
         home_kd_emulator.stop()
 
@@ -239,10 +226,10 @@ def find_specific_governors(governors_to_find, kingdom, pull_label, home_kd_emul
 
         session.commit()
 
-        with engine.connect() as con:
-            con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
-
-        storage.upload_to_s3()
+        # with engine.connect() as con:
+        #     con.execute('REFRESH MATERIALIZED VIEW latest_stats_pull')
+        #
+        # storage.upload_to_s3()
 
 def main():
     args = parser.parse_args()

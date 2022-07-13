@@ -19,9 +19,14 @@ emulators = {
         'name': 'lasfdjfd-dev-4',
         'address': '127.0.0.1:5675'
     },
-    'lasfdjfd-dev-5': {
+    'lasfdjfd-gov_name_search': {
         'type': 'bluestacks',
-        'name': 'lasfdjfd-dev-5',
+        'name': 'governor_name_search',
+        'address': '127.0.0.1:5605'
+    },
+    'lasfdjfd-dev-6': {
+        'type': 'bluestacks',
+        'name': 'lasfdjfd-dev-6',
         'address': '127.0.0.1:5555'
     },
     'genymotion-2402':{
@@ -54,7 +59,7 @@ coordinates = {
         'row_4': (960, 694),
         'row_5': (960, 816),
         'row_6': (960, 938),
-        'governor_id': (775, 284, 1200, 320),
+        'governor_id': (892, 284, 1200, 320),
         'name': (840, 340),
         'more_info': (470, 800),
         'expand_kill_points': (1342, 421),
@@ -82,7 +87,7 @@ databases = {
         "username": "rok_scraper",
         "host": "rok-scraper-dev-free.cnnvfpj4dpp0.us-west-2.rds.amazonaws.com",
         "port": 5432,
-        "database": "rok_scraper_test",
+        "database": "kd2402_kvk4",
         "password_parameter_name": "rok_scraper_db_password"
     }
 }

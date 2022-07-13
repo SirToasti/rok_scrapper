@@ -27,6 +27,7 @@ class Governor_Data(Base):
     rss_assistance = Column(BigInteger)
     helps = Column(BigInteger)
     kill_parse_error = Column(Boolean)
+    timestamp = Column(TIMESTAMP)
 
 
 class Governors(Base):

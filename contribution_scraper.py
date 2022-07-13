@@ -122,7 +122,7 @@ class StatsScraper:
         if not self.is_on_profile(governor_id, 3):
             logger.warning('unable to find {}'.format(governor_name))
         else:
-            found_id = self.process_profile()
+            found_id = self.process_profile(expected_gov_id=governor_id)
             if str(governor_id) != found_id:
                 logger.warning('did not find the correct profile for id:{} name:{}'.format(governor_id, governor_name))
                 if not is_retry:
@@ -132,7 +132,7 @@ class StatsScraper:
                     return
         self.emulator.tap_location(self.coordinates['close_big_window'])
 
-    def process_profile(self):
+    def process_profile(self, expected_gov_id=None):
         self.emulator.tap_location(self.coordinates['name'])
         self.emulator.tap_location(self.coordinates['expand_kill_points'])
         kills = self.emulator.get_screen()
@@ -149,7 +149,7 @@ class StatsScraper:
             logger.error('unrecognized governor id that was hashed: {}'.format(governor_id))
         if self.parse_inline and governor_id.isnumeric():
             data = contribution_parser.parse_stats(kills, more_info, governor_id, name)
-            if data:
+            if data and (expected_gov_id is None or expected_gov_id == governor_id):
                 self.parsed_data.append(data)
         return governor_id
 
@@ -179,11 +179,14 @@ class StatsScraper:
             text = text.replace('l', '1', 1)
         while 'O' in text:
             text = text.replace('O', '0', 1)
+        while 'z' in text:
+            text = text.replace('z', ':', 1)
         print(text, raw)
 
         match = re.search('.{3}: ?(\d+)(#.{4})?\)', text)
         if not match:
             logger.warning('Failed to parse governor id: {}'.format(text))
+            # id_crop.show()
             return hashlib.sha1(text.encode('utf-8')).hexdigest()
         if match.group(2):
             logger.warning('Governor {} has migrated to KD{}'.format(match.group(1), match.group(2)))
